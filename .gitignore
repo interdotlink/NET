@@ -1,0 +1,11 @@
+.DS_Store
+*.egg-info
+.idea
+.mypy_cache
+.pytest_cache/
+__pycache__
+README.html
+.tox
+venv
+.venv
+.vscode
