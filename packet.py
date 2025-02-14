@@ -6,6 +6,7 @@ from textwrap import wrap
 from scapy.contrib.mpls import MPLS, EoMCW  # type: ignore
 from scapy.layers.inet import IP, TCP, UDP, Ether  # type: ignore
 from scapy.layers.inet6 import IPv6  # type: ignore
+from scapy.layers.l2 import Dot1Q  # type: ignore
 from scapy.packet import Packet  # type: ignore
 
 from settings import Settings
@@ -39,6 +40,8 @@ def build_packet() -> None:
         outer_src_mac = Settings.ETHERNET_SRC
         inner_src_mac = Settings.ETHERNET_SRC
 
+    vlan = Settings.ETHERNET_VLAN_MIN
+
     label = Settings.MPLS_MIN
 
     if Settings.IPV6:
@@ -58,6 +61,17 @@ def build_packet() -> None:
 
     packet = Ether(dst=outer_dst_mac, src=outer_src_mac)
     Settings.LAYER_ETH = 0
+
+    if Settings.ETHERNET_VLAN:
+        for _ in range(0, Settings.ETHERNET_VLAN):
+            packet.add_payload(Dot1Q(vlan=vlan))
+        Settings.LAYER_VLAN_FIRST = Settings.LAYER_ETH + 1  # Outer most VLAN
+        Settings.LAYER_VLAN_LAST = (
+            Settings.LAYER_ETH + Settings.ETHERNET_VLAN
+        )  # Inner most VLAN
+    else:
+        Settings.LAYER_VLAN_FIRST = Settings.LAYER_ETH
+        Settings.LAYER_VLAN_LAST = Settings.LAYER_VLAN_FIRST
 
     if Settings.MPLS:
         for _ in range(0, Settings.MPLS):
@@ -124,6 +138,17 @@ def rotate_ipv6(ip_addr: str) -> str:
     return str(ip_address(addr)).upper()
 
 
+def rotate_vlan(vlan: int) -> int:
+    """
+    Increment a VLAN ID
+    """
+    if vlan < Settings.ETHERNET_VLAN_MAX:
+        vlan += 1
+    else:
+        vlan = Settings.ETHERNET_VLAN_MIN
+    return vlan
+
+
 def rotate_label(label: int) -> int:
     """
     Increment an MPLS label
@@ -174,6 +199,11 @@ def rotate_values() -> None:
     if Settings.ETHERNET_SRC_ROTATE:
         Settings.PACKET[Settings.LAYER_ETH_ROTATE].src = rotate_mac(
             Settings.PACKET[Settings.LAYER_ETH_ROTATE].src
+        )
+
+    if Settings.ETHERNET_VLAN_ROTATE:
+        Settings.PACKET[Settings.LAYER_VLAN_LAST].vlan = rotate_vlan(
+            Settings.PACKET[Settings.LAYER_VLAN_LAST].vlan
         )
 
     if Settings.MPLS_ROTATE:

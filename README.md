@@ -38,6 +38,10 @@ Ethernet Settings:
   --dst-mac DST_MAC    Set the initial destination MAC. (default: 00:00:00:00:00:02)
   --src-mac SRC_MAC    Set the initial source MAC. (default: 00:00:00:00:00:01)
 
+VLAN Settings:
+  -v                   Insert VLAN ID after the outer Ethernet header (before any MPLS labels). Specify -v multiple times to stack multiple VLAN IDs. (default: None)
+  --vlan-id            Change the inner most VLAN ID per-frame. (default: False)
+
 MPLS Settings:
   -m                   Insert an MPLS label after the outer Ethernet header. Specify -m multiple times to stack multiple MPLS labels. (default: None)
   --mpls-label         Change the inner most MPLS label per-frame. (default: False)

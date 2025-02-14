@@ -101,6 +101,24 @@ class CliArgs:
             required=False,
         )
 
+        mpls_args = parser.add_argument_group("VLAN Settings")
+        mpls_args.add_argument(
+            "-v",
+            help="Insert VLAN ID after the outer Ethernet header "
+            "(before any MPLS labels). "
+            "Specify -v multiple times to stack multiple VLAN IDs.",
+            default=None,
+            action="count",
+            required=False,
+        )
+        mpls_args.add_argument(
+            "--vlan-id",
+            help="Change the inner most VLAN ID per-frame.",
+            default=False,
+            action="store_true",
+            required=False,
+        )
+
         mpls_args = parser.add_argument_group("MPLS Settings")
         mpls_args.add_argument(
             "-m",
@@ -208,6 +226,9 @@ class CliArgs:
         if args["mpls_label"] and not args["m"]:
             raise ValueError(f"--mpls-label requires -m")
 
+        if args["vlan_id"] and not args["v"]:
+            raise ValueError(f"--vlan-id requires -v")
+
         if args["l2_inner"] and not args["m"]:
             raise ValueError(f"--l2-inner requires -m")
 
@@ -238,6 +259,8 @@ class CliArgs:
         Settings.ETHERNET_DST = args["dst_mac"]
         Settings.ETHERNET_SRC = args["src_mac"]
         Settings.ETHERNET_INNER = args["l2_inner"]
+        Settings.ETHERNET_VLAN = args["v"]
+        Settings.ETHERNET_VLAN_ROTATE = args["vlan_id"]
         Settings.MPLS = args["m"]
         Settings.MPLS_ROTATE = args["mpls_label"]
         Settings.IP_DST_ROTATE = args["l3_dst"]
@@ -254,6 +277,7 @@ class CliArgs:
         if (
             Settings.ETHERNET_DST_ROTATE
             or Settings.ETHERNET_SRC_ROTATE
+            or Settings.ETHERNET_VLAN_ROTATE
             or Settings.MPLS_ROTATE
             or Settings.IP_DST_ROTATE
             or Settings.IP_SRC_ROTATE
