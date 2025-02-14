@@ -11,6 +11,7 @@ from packet import build_packet, rotate_values
 from settings import Settings
 from stats import IntfStats
 
+
 class Tx:
     @staticmethod
     def end(sig, frame) -> None:
@@ -90,11 +91,11 @@ class Tx:
             The following prints the stats more reliably on the STATS_INTERVAL
             but, it eats way more CPU cycles than sleep() and drops the
             pps rate:
-            
+
             next_update = Settings.DURATION + 1
             while Settings.DURATION < next_update:
                ...
-            
+
             Therefor, use sleep to keep the pps rate higher:
             """
             sleep(Settings.STATS_INTERVAL)

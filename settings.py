@@ -14,6 +14,10 @@ class Settings:
     ETHERNET_MIN_ADDR = 0
     ETHERNET_SRC = "00:00:00:00:00:01"
     ETHERNET_SRC_ROTATE = False
+    ETHERNET_VLAN: Optional[int] = None
+    ETHERNET_VLAN_MAX = 4094
+    ETHERNET_VLAN_MIN = 0
+    ETHERNET_VLAN_ROTATE = False
 
     # L2.5 Settings
     MPLS: Optional[int] = None
@@ -50,6 +54,8 @@ class Settings:
     LAYER_ETH = 0
     LAYER_ETH_INNER = 0
     LAYER_ETH_ROTATE = 0
+    LAYER_VLAN_FIRST = 0
+    LAYER_VLAN_LAST = 0
     LAYER_MPLS_FIRST = 0
     LAYER_MPLS_LAST = 0
     LAYER_IP = 0
