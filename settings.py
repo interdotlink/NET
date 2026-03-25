@@ -7,63 +7,68 @@ from stats import Stats
 
 class Settings:
     # L2 Settings
-    ETHERNET_DST = "00:00:00:00:00:02"
-    ETHERNET_DST_ROTATE = False
-    ETHERNET_INNER = False
-    ETHERNET_MAX_ADDR = 281474976710655
-    ETHERNET_MIN_ADDR = 0
-    ETHERNET_SRC = "00:00:00:00:00:01"
-    ETHERNET_SRC_ROTATE = False
-    ETHERNET_VLAN: Optional[int] = None
-    ETHERNET_VLAN_MAX = 4094
-    ETHERNET_VLAN_MIN = 0
-    ETHERNET_VLAN_ROTATE = False
+    ethernet_dst = "00:00:00:00:00:02"
+    ethernet_dst_rotate = False
+    ethernet_inner = False
+    ethernet_max_addr = 281474976710655
+    ethernet_min_addr = 0
+    ethernet_src = "00:00:00:00:00:01"
+    ethernet_src_rotate = False
+    ethernet_vlan: Optional[int] = None
+    ethernet_vlan_max = 4094
+    ethernet_vlan_min = 0
+    ethernet_vlan_rotate = False
 
     # L2.5 Settings
-    MPLS: Optional[int] = None
-    MPLS_MAX = 1048575
-    MPLS_MIN = 0
-    MPLS_ROTATE = False
-    MPLS_UNALLOCATED = 256
+    mpls: Optional[int] = None
+    mpls_max = 1048575
+    mpls_min = 0
+    mpls_rotate = False
+    mpls_unallocated = 256
 
     # L3 Settings
-    IP_DST_ROTATE = False
-    IP_SRC_ROTATE = False
-    IPV4_DST = "10.201.201.2"
-    IPV4_MAX = 4294967295
-    IPV4_MIN = 0
-    IPV4_SRC = "10.201.201.1"
-    IPV6 = False
-    IPV6_DST = "FD00::0201:2"
-    IPV6_MAX = 340282366920938463463374607431768211455
-    IPV6_MIN = 0
-    IPV6_SRC = "FD00::0201:1"
+    ip_dst_rotate = False
+    ip_src_rotate = False
+    ip_ttl = 64
+    ipv4_dst = "10.201.201.2"
+    ipv4_max = 4294967295
+    ipv4_min = 0
+    ipv4_src = "10.201.201.1"
+    ipv6 = False
+    ipv6_dst = "FD00::0201:2"
+    ipv6_max = 340282366920938463463374607431768211455
+    ipv6_min = 0
+    ipv6_src = "FD00::0201:1"
 
     # L4 Settings
-    L4_DST_ROTATE = False
-    L4_SRC_ROTATE = False
-    L4_MAX = 65535
-    L4_MIN = 1024
-    UDP = False
+    l4_dst_rotate = False
+    l4_src_rotate = False
+    l4_max = 65535
+    l4_min = 1024
+    udp = False
+    icmp = False
+    l4_seq_rotate = False
+    l4_seq_min = 0
+    l4_seq_max = 65535
 
     # Test Settings
-    DURATION = 0
-    MAX_DURATION = 10
-    INTER_PACKET_GAP = 0.0
-    INTERFACES: list[str] = []
-    LAYER_ETH = 0
-    LAYER_ETH_INNER = 0
-    LAYER_ETH_ROTATE = 0
-    LAYER_VLAN_FIRST = 0
-    LAYER_VLAN_LAST = 0
-    LAYER_MPLS_FIRST = 0
-    LAYER_MPLS_LAST = 0
-    LAYER_IP = 0
-    LAYER_4 = 0
-    PACKET: Optional[Packet] = None
-    PRINT_PACKET = False
-    ROTATE = False
-    RUNNING_STATS = False
-    STATS = Stats()
-    STATS_INTERVAL = 1
-    TRANSMITTING = False
+    duration = 0
+    max_duration = 10
+    inter_packet_gap = 0.0
+    interfaces: list[str] = []
+    layer_eth = 0
+    layer_eth_inner = 0
+    layer_eth_rotate = 0
+    layer_vlan_first = 0
+    layer_vlan_last = 0
+    layer_mpls_first = 0
+    layer_mpls_last = 0
+    layer_ip = 0
+    layer_4 = 0
+    packet: Optional[Packet] = None
+    print_packet = False
+    rotate = False
+    running_stats = False
+    stats = Stats()
+    stats_interval = 1
+    transmitting = False

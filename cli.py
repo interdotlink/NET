@@ -28,7 +28,7 @@ class CliArgs:
             help="Duration to transmit for in seconds.",
             type=int,
             required=False,
-            default=Settings.MAX_DURATION,
+            default=Settings.max_duration,
         )
         parser.add_argument(
             "-g",
@@ -36,7 +36,7 @@ class CliArgs:
             "Anything higher than 0.0 is reducing the pps rate.",
             type=float,
             required=False,
-            default=Settings.INTER_PACKET_GAP,
+            default=Settings.inter_packet_gap,
         )
         parser.add_argument(
             "-i",
@@ -45,35 +45,35 @@ class CliArgs:
             type=str,
             required=True,
             action='append',
-            default=Settings.INTERFACES,
+            default=Settings.interfaces,
         )
         parser.add_argument(
             "-s",
             help="Print stats during test (lowers pps rate).",
             action="store_true",
             required=False,
-            default=Settings.RUNNING_STATS,
+            default=Settings.running_stats,
         )
         parser.add_argument(
             "-p",
             help="Print the protocol stack which is being sent.",
             action="store_true",
             required=False,
-            default=Settings.PRINT_PACKET,
+            default=Settings.print_packet,
         )
 
         eth_args = parser.add_argument_group("Ethernet Settings")
         eth_args.add_argument(
             "--l2-dst",
             help="Change the inner most destination MAC address per-frame.",
-            default=False,
+            default=Settings.ethernet_dst_rotate,
             action="store_true",
             required=False,
         )
         eth_args.add_argument(
             "--l2-src",
             help="Change the inner most source MAC address per-frame.",
-            default=False,
+            default=Settings.ethernet_src_rotate,
             action="store_true",
             required=False,
         )
@@ -82,21 +82,21 @@ class CliArgs:
             help="Add an inner Ethernet header after the MPLS label(s) stack. "
             "This will automatically insert the Pseudowire Control-World. "
             "Requires -m at least once.",
-            default=False,
+            default=Settings.ethernet_inner,
             action="store_true",
             required=False,
         )
         eth_args.add_argument(
             "--dst-mac",
             help=f"Set the initial destination MAC.",
-            default=Settings.ETHERNET_DST,
+            default=Settings.ethernet_dst,
             type=str,
             required=False,
         )
         eth_args.add_argument(
             "--src-mac",
             help=f"Set the initial source MAC.",
-            default=Settings.ETHERNET_SRC,
+            default=Settings.ethernet_src,
             type=str,
             required=False,
         )
@@ -140,72 +140,94 @@ class CliArgs:
         ip_args.add_argument(
             "-6",
             help="Use IPv6 instead of IPv4.",
-            default=False,
+            default=Settings.ipv6,
             action="store_true",
+            required=False,
+        )
+        ip_args.add_argument(
+            "-t",
+            help="TTL",
+            default=Settings.ip_ttl,
+            type=int,
             required=False,
         )
         ip_args.add_argument(
             "--l3-dst",
             help="Change the destination IP address per-packet.",
-            default=False,
+            default=Settings.ip_dst_rotate,
             action="store_true",
             required=False,
         )
         ip_args.add_argument(
             "--l3-src",
             help="Change the source IP address per-packet.",
-            default=False,
+            default=Settings.ip_src_rotate,
             action="store_true",
             required=False,
         )
         ip_args.add_argument(
             "--dst-ipv4",
             help=f"Set the initial destination IPv4 address.",
-            default=Settings.IPV4_DST,
+            default=Settings.ipv4_dst,
             type=str,
             required=False,
         )
         ip_args.add_argument(
             "--src-ipv4",
             help=f"Set the initial source IPv4 address.",
-            default=Settings.IPV4_SRC,
+            default=Settings.ipv4_src,
             type=str,
             required=False,
         )
         ip_args.add_argument(
             "--dst-ipv6",
             help=f"Set the initial destination IPv6 address.",
-            default=Settings.IPV6_DST,
+            default=Settings.ipv6_dst,
             type=str,
             required=False,
         )
         ip_args.add_argument(
             "--src-ipv6",
             help=f"Set the initial source IPv6 address",
-            default=Settings.IPV6_SRC,
+            default=Settings.ipv6_src,
             type=str,
             required=False,
         )
 
-        tcp_args = parser.add_argument_group("L4 Settings")
-        tcp_args.add_argument(
+        l4_args = parser.add_argument_group("L4 Settings")
+        l4_protocol_group = l4_args.add_mutually_exclusive_group()
+        l4_protocol_group.add_argument(
             "-u",
             help="Use UDP instead of TCP.",
-            default=False,
+            default=Settings.udp,
             action="store_true",
             required=False,
         )
-        tcp_args.add_argument(
+        l4_protocol_group.add_argument(
+            "-I",
+            help="Use ICMP instead of TCP.",
+            default=Settings.icmp,
+            action="store_true",
+            required=False,
+        )
+        l4_args.add_argument(
             "--l4-dst",
-            help="Change the destination port per-datagram.",
-            default=False,
+            help="Change the destination port per-datagram (TCP & UDP).",
+            default=Settings.l4_dst_rotate,
             action="store_true",
             required=False,
         )
-        tcp_args.add_argument(
+        l4_args.add_argument(
             "--l4-src",
-            help="Change the source port per-datagram.",
-            default=False,
+            help="Change the source port per-datagram (TCP & UDP).",
+            default=Settings.l4_src_rotate,
+            action="store_true",
+            required=False,
+        )
+        l4_args.add_argument(
+            "--l4-seq",
+            help="Change the sequence number per-datagram (ICMP).",
+            default=Settings.l4_seq_rotate,
             action="store_true",
             required=False,
         )
@@ -249,41 +271,45 @@ class CliArgs:
             == ipaddress.IPv6Address
         )
 
-        Settings.MAX_DURATION = args["d"]
-        Settings.INTER_PACKET_GAP = args["g"]
-        Settings.INTERFACES = args["i"]
-        Settings.RUNNING_STATS = args["s"]
-        Settings.PRINT_PACKET = args["p"]
-        Settings.ETHERNET_DST_ROTATE = args["l2_dst"]
-        Settings.ETHERNET_SRC_ROTATE = args["l2_src"]
-        Settings.ETHERNET_DST = args["dst_mac"]
-        Settings.ETHERNET_SRC = args["src_mac"]
-        Settings.ETHERNET_INNER = args["l2_inner"]
-        Settings.ETHERNET_VLAN = args["v"]
-        Settings.ETHERNET_VLAN_ROTATE = args["vlan_id"]
-        Settings.MPLS = args["m"]
-        Settings.MPLS_ROTATE = args["mpls_label"]
-        Settings.IP_DST_ROTATE = args["l3_dst"]
-        Settings.IP_SRC_ROTATE = args["l3_src"]
-        Settings.IPV4_DST = args["dst_ipv4"]
-        Settings.IPV4_SRC = args["src_ipv4"]
-        Settings.IPV6 = args["6"]
-        Settings.IPV6_DST = args["dst_ipv6"]
-        Settings.IPV6_SRC = args["src_ipv6"]
-        Settings.L4_DST_ROTATE = args["l4_dst"]
-        Settings.L4_SRC_ROTATE = args["l4_src"]
-        Settings.UDP = args["u"]
+        Settings.max_duration = args["d"]
+        Settings.inter_packet_gap = args["g"]
+        Settings.interfaces = args["i"]
+        Settings.running_stats = args["s"]
+        Settings.print_packet = args["p"]
+        Settings.ethernet_dst_rotate = args["l2_dst"]
+        Settings.ethernet_src_rotate = args["l2_src"]
+        Settings.ethernet_dst = args["dst_mac"]
+        Settings.ethernet_src = args["src_mac"]
+        Settings.ethernet_inner = args["l2_inner"]
+        Settings.ethernet_vlan = args["v"]
+        Settings.ethernet_vlan_rotate = args["vlan_id"]
+        Settings.mpls = args["m"]
+        Settings.mpls_rotate = args["mpls_label"]
+        Settings.ip_dst_rotate = args["l3_dst"]
+        Settings.ip_src_rotate = args["l3_src"]
+        Settings.ip_ttl = args["t"]
+        Settings.ipv4_dst = args["dst_ipv4"]
+        Settings.ipv4_src = args["src_ipv4"]
+        Settings.ipv6 = args["6"]
+        Settings.ipv6_dst = args["dst_ipv6"]
+        Settings.ipv6_src = args["src_ipv6"]
+        Settings.l4_dst_rotate = args["l4_dst"]
+        Settings.l4_src_rotate = args["l4_src"]
+        Settings.udp = args["u"]
+        Settings.icmp = args["I"]
+        Settings.l4_seq_rotate = args["l4_seq"]
 
         if (
-            Settings.ETHERNET_DST_ROTATE
-            or Settings.ETHERNET_SRC_ROTATE
-            or Settings.ETHERNET_VLAN_ROTATE
-            or Settings.MPLS_ROTATE
-            or Settings.IP_DST_ROTATE
-            or Settings.IP_SRC_ROTATE
-            or Settings.L4_DST_ROTATE
-            or Settings.L4_SRC_ROTATE
+            Settings.ethernet_dst_rotate
+            or Settings.ethernet_src_rotate
+            or Settings.ethernet_vlan_rotate
+            or Settings.mpls_rotate
+            or Settings.ip_dst_rotate
+            or Settings.ip_src_rotate
+            or Settings.l4_dst_rotate
+            or Settings.l4_src_rotate
+            or Settings.l4_seq_rotate
         ):
-            Settings.ROTATE = True
+            Settings.rotate = True
 
         return args

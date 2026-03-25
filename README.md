@@ -17,8 +17,8 @@ When sending traffic out of more than one interface, NET still increments the he
 
 ```shell
 $ python3 ./net.py -h
-usage: net.py [-h] [-d D] [-g G] -i I [-s] [-p] [--l2-dst] [--l2-src] [--l2-inner] [--dst-mac DST_MAC] [--src-mac SRC_MAC] [-m] [--mpls-label] [-6] [--l3-dst]
-              [--l3-src] [--dst-ipv4 DST_IPV4] [--src-ipv4 SRC_IPV4] [--dst-ipv6 DST_IPV6] [--src-ipv6 SRC_IPV6] [-u] [--l4-dst] [--l4-src]
+usage: net.py [-h] [-d D] [-g G] -i I [-s] [-p] [--l2-dst] [--l2-src] [--l2-inner] [--dst-mac DST_MAC] [--src-mac SRC_MAC] [-v] [--vlan-id] [-m] [--mpls-label] [-6] [-t T] [--l3-dst] [--l3-src]
+              [--dst-ipv4 DST_IPV4] [--src-ipv4 SRC_IPV4] [--dst-ipv6 DST_IPV6] [--src-ipv6 SRC_IPV6] [-u | -I] [--l4-dst] [--l4-src] [--l4-seq]
 
 Net Entropy Tester - Send packets with changing entropy
 
@@ -33,8 +33,7 @@ options:
 Ethernet Settings:
   --l2-dst             Change the inner most destination MAC address per-frame. (default: False)
   --l2-src             Change the inner most source MAC address per-frame. (default: False)
-  --l2-inner           Add an inner Ethernet header after the MPLS label(s) stack. This will automatically insert the Pseudowire Control-World. Requires -m at least
-                       once. (default: False)
+  --l2-inner           Add an inner Ethernet header after the MPLS label(s) stack. This will automatically insert the Pseudowire Control-World. Requires -m at least once. (default: False)
   --dst-mac DST_MAC    Set the initial destination MAC. (default: 00:00:00:00:00:02)
   --src-mac SRC_MAC    Set the initial source MAC. (default: 00:00:00:00:00:01)
 
@@ -48,6 +47,7 @@ MPLS Settings:
 
 L3 Settings:
   -6                   Use IPv6 instead of IPv4. (default: False)
+  -t T                 TTL (default: 64)
   --l3-dst             Change the destination IP address per-packet. (default: False)
   --l3-src             Change the source IP address per-packet. (default: False)
   --dst-ipv4 DST_IPV4  Set the initial destination IPv4 address. (default: 10.201.201.2)
@@ -57,21 +57,21 @@ L3 Settings:
 
 L4 Settings:
   -u                   Use UDP instead of TCP. (default: False)
-  --l4-dst             Change the destination port per-datagram. (default: False)
-  --l4-src             Change the source port per-datagram. (default: False)
+  -I                   Use ICMP instead of TCP. (default: False)
+  --l4-dst             Change the destination port per-datagram (TCP & UDP). (default: False)
+  --l4-src             Change the source port per-datagram (TCP & UDP). (default: False)
+  --l4-seq             Change the sequence number per-datagram (ICMP). (default: False)
 ```
 
 ## Install
 
 ```shell
-python3 -m venv --without-pip .venv && source .venv/bin/activate
-python3 -m ensurepip
+python3 -m venv .venv && source .venv/bin/activate
 python3 -m pip install -r requirements.txt
-python3 -m pip freeze -l
 ./net.py -h
 ```
 
-You need to run net.py as root in order to use raw sockets. When using sudo a different Python interpreter is used than the one in the venv you just set up, which will be missing the dependencies, therefore you use `sudo -E $(which python3) ./net.py` throughout this README. This is not needed if you are NOT using a venv or running in Docker.
+You need to run net.py as root in order to use raw sockets. When using sudo a different Python interpreter is used than the one in the venv you just set up, which will be missing the dependencies, therefore `sudo -E $(which python3) ./net.py` is used throughout this README. This is not needed if you are NOT using a venv or running in Docker.
 
 ## Example
 

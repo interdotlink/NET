@@ -14,12 +14,12 @@ from stats import IntfStats
 
 class Tx:
     @staticmethod
-    def end(sig, frame) -> None:
+    def end(sig: int, frame: int) -> None:
         """
         End the test
         """
-        Settings.TRANSMITTING = False
-        Settings.DURATION = Settings.MAX_DURATION
+        Settings.transmitting = False
+        Settings.duration = Settings.max_duration
 
     @staticmethod
     def run() -> None:
@@ -29,11 +29,11 @@ class Tx:
         build_packet()
 
         print(
-            f"Going to transmit for {Settings.MAX_DURATION} seconds using interface(s) "
-            f"{Settings.INTERFACES}\n"
+            f"Going to transmit for {Settings.max_duration} seconds using interface(s) "
+            f"{Settings.interfaces}\n"
         )
 
-        if Settings.RUNNING_STATS:
+        if Settings.running_stats:
             # The live stats thread eats up precious CPU cycles, hence optional
             stats_thd = Thread(target=Tx.stats)
             stats_thd.start()
@@ -50,14 +50,14 @@ class Tx:
 
         ctrl_thd.join()
         tx_thd.join()
-        if Settings.RUNNING_STATS:
+        if Settings.running_stats:
             stats_thd.join()
         print(f"Finished at {datetime.now()}")
 
         # Print total across all interfaces
         total_tx_pks = 0
-        for intf in Settings.INTERFACES:
-            total_tx_pks += Settings.STATS.intfs[intf].tx_pks
+        for intf in Settings.interfaces:
+            total_tx_pks += Settings.stats.intfs[intf].tx_pks
         print(f"Sent {total_tx_pks} packets")
 
     @staticmethod
@@ -66,12 +66,12 @@ class Tx:
         Start the test and loop until the $stop condition is true
         """
 
-        Settings.TRANSMITTING = True
-        while Settings.DURATION < Settings.MAX_DURATION:
-            sleep(Settings.STATS_INTERVAL)
-            Settings.DURATION += Settings.STATS_INTERVAL
+        Settings.transmitting = True
+        while Settings.duration < Settings.max_duration:
+            sleep(Settings.stats_interval)
+            Settings.duration += Settings.stats_interval
 
-        Settings.TRANSMITTING = False
+        Settings.transmitting = False
 
     @staticmethod
     def stats() -> None:
@@ -80,39 +80,39 @@ class Tx:
         """
 
         # Wait for start signal
-        while not Settings.TRANSMITTING:
+        while not Settings.transmitting:
             ...
 
         print("")
         print("| Time | Interface | Tx Pkts | Total Pkts |")
         print("|------|-----------|---------|------------|")
-        while Settings.TRANSMITTING:
+        while Settings.transmitting:
             """
             The following prints the stats more reliably on the STATS_INTERVAL
             but, it eats way more CPU cycles than sleep() and drops the
             pps rate:
 
-            next_update = Settings.DURATION + 1
-            while Settings.DURATION < next_update:
+            next_update = Settings.duration + 1
+            while Settings.duration < next_update:
                ...
 
-            Therefor, use sleep to keep the pps rate higher:
+            Therefore, use sleep to keep the pps rate higher:
             """
-            sleep(Settings.STATS_INTERVAL)
+            sleep(Settings.stats_interval)
 
             total_diff = 0
             total_tx_pks = 0
-            for intf in Settings.INTERFACES:
-                intf_stats = Settings.STATS.intfs[intf]
+            for intf in Settings.interfaces:
+                intf_stats = Settings.stats.intfs[intf]
                 diff = intf_stats.tx_pks - intf_stats.tx_pks_last
                 intf_stats.tx_pks_last = intf_stats.tx_pks
                 total_diff += diff
                 total_tx_pks += intf_stats.tx_pks
                 print(
-                    f"| {Settings.DURATION:^4} | {intf:^9} | {diff:^7} | {intf_stats.tx_pks:^10} |"
+                    f"| {Settings.duration:^4} | {intf:^9} | {diff:^7} | {intf_stats.tx_pks:^10} |"
                 )
             print(
-                f"| {Settings.DURATION:^4} |     *     | {total_diff:^7} | {total_tx_pks:^10} |"
+                f"| {Settings.duration:^4} |     *     | {total_diff:^7} | {total_tx_pks:^10} |"
             )
             print(f"|------|-----------|---------|------------|")
         print("")
@@ -129,24 +129,24 @@ class Tx:
         Create a socket which stays open for each interface:
         """
         sockets = {}
-        for intf in Settings.INTERFACES:
+        for intf in Settings.interfaces:
             sockets[intf] = conf.L2socket(iface=intf)
 
             # Create a stats objects per-intf which will be updated during the test
-            Settings.STATS.intfs[intf] = IntfStats()
+            Settings.stats.intfs[intf] = IntfStats()
 
         # Wait for start signal
-        while not Settings.TRANSMITTING:
+        while not Settings.transmitting:
             ...
 
-        while Settings.TRANSMITTING:
-            for intf in Settings.INTERFACES:
-                # send(x=Settings.PACKET, iface=intf, verbose=0)  # 30pps !!!
-                # sendp(x=Settings.PACKET, iface=intf, verbose=0)  # 24 pps !!!
-                # sendpfast(x=Settings.PACKET, iface=intf, pps=10000)  # 15 pps !!!
-                sockets[intf].send(x=Settings.PACKET)  # 6k pps :D
-                Settings.STATS.intfs[intf].tx_pks += 1
-                if Settings.ROTATE:
+        while Settings.transmitting:
+            for intf in Settings.interfaces:
+                # send(x=Settings.packet, iface=intf, verbose=0)  # 30pps !!!
+                # sendp(x=Settings.packet, iface=intf, verbose=0)  # 24 pps !!!
+                # sendpfast(x=Settings.packet, iface=intf, pps=10000)  # 15 pps !!!
+                sockets[intf].send(x=Settings.packet)  # 6k pps :D
+                Settings.stats.intfs[intf].tx_pks += 1
+                if Settings.rotate:
                     rotate_values()
             """
             This defaults to 0.0.
@@ -155,7 +155,7 @@ class Tx:
             don't run properly (e.g. the control thread can't count the duration
             properly and the test runs for much longer that it should).
             """
-            sleep(Settings.INTER_PACKET_GAP)
+            sleep(Settings.inter_packet_gap)
 
-        for intf in Settings.INTERFACES:
+        for intf in Settings.interfaces:
             sockets[intf].close()
